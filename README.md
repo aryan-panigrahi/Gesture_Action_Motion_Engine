@@ -1,51 +1,84 @@
 # Gesture Action Motion Engine
 
-A collection of Python scripts that allow you to control games or applications using computer vision (gestures/motion tracking) and voice commands.
+A unified Python application that lets you control games or applications using **MediaPipe Hand Tracking** and voice commands — concurrently, in real time.
 
 ## Features
 
-1. **Color Controller (`color_game.py`)**
-   Uses your webcam to track a specific colored object (default: Blue). Swiping the object Up, Down, Left, or Right triggers the corresponding arrow key inputs on your keyboard using `pydirectinput`.
+1. **Unified Engine Launcher (`main.py`)**  
+   A graphical Tkinter interface to launch and stop the Voice and Gesture engines simultaneously.
 
-2. **Voice Controller (`voice_314.py`)**
-   Uses your microphone to listen for specific commands (`up`, `down`, `left`, `right`, `jump`, `start`). It processes speech partially for ultra-fast response times and triggers corresponding keyboard inputs.
+2. **Hand Tracking Gesture Controller (`engines/gesture_game.py`)**  
+   Uses your webcam and **MediaPipe** to track your **index finger tip** in real time.  
+   - Moving your finger far enough Up, Down, Left, or Right from the center neutral zone triggers a directional action.
+   - No colored object needed — just your bare hand.
+
+3. **Standalone Hand Tracker (`scripts/hand_tracker.py`)**  
+   A simple, dependency-light standalone version of the gesture controller — useful for quick testing without launching the full engine.
+
+4. **Voice Controller (`engines/voice_314.py`)**  
+   Uses your microphone for local, offline speech recognition via Vosk. Evaluates partial phonemes for ultra-fast input response.
+
+5. **Settings UI (`Settings / Calibration` button)**  
+   - **Hand Tracking tab**: sliders for box size, cooldown/sensitivity, and all three MediaPipe confidence thresholds.
+   - **Preview tab**: opens a live camera overlay to verify hand detection before running.
+   - **Keybinds tab**: remap all voice and gesture actions.
+
+6. **Custom Keybinds (`config.json`)**  
+   Map swipes and voice commands to any keyboard key via `pydirectinput`.
 
 ## Requirements
 
-- Python 3.x
-- Windows OS (due to `pydirectinput` which is Windows-specific for sending DirectX key pulses).
+- Python 3.10+ (tested on 3.14)
+- Windows OS (`pydirectinput` is Windows-specific)
+- A webcam and microphone
 
 ## Installation
 
 1. Clone or download this repository.
-2. Install the required dependencies:
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-3. **Download the Voice Model:**
-   The `voice_314.py` script requires a Vosk acoustic model to run. 
-   - Download a lightweight English model from [Vosk Models](https://alphacephei.com/vosk/models) (e.g., `vosk-model-small-en-us-0.15`).
-   - Extract the downloaded ZIP file.
-   - Rename the extracted folder to `model` and place it in the root directory of this project.
+3. **Download the Hand Landmark Model:**  
+   The gesture engine requires a MediaPipe `.task` model file.
+   ```bash
+   python -c "import urllib.request; urllib.request.urlretrieve('https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task', 'model/hand_landmarker.task'); print('Downloaded!')"
+   ```
+   *(The `model/` folder is gitignored — you must run this once after cloning.)*
+
+4. **Download the Vosk Voice Model** *(optional, for voice engine)*:  
+   Download a model from [Vosk Models](https://alphacephei.com/vosk/models) (e.g., `vosk-model-small-en-us-0.15`), extract it, and place the folder as `model/` in the project root.
+
+## Configuration
+
+Edit `config.json` or use the Settings UI in `main.py`. Example:
+```json
+{
+  "gesture_controls": {
+    "swipe_up": "w",
+    "swipe_down": "s",
+    "swipe_left": "a",
+    "swipe_right": "d"
+  },
+  "hand_tracking": {
+    "swipe_threshold": 100,
+    "cooldown_time": 0.5,
+    "detection_confidence": 0.7,
+    "presence_confidence": 0.7,
+    "tracking_confidence": 0.6
+  }
+}
+```
 
 ## Usage
 
-### Color Controller
-Run the color tracking script:
 ```bash
-python color_game.py
+python main.py
 ```
-- Hold a blue object in front of your webcam.
-- Swipe it past the center 'neutral zone' to trigger arrow key events.
-- Press `q` to quit the windows.
-
-### Voice Controller
-Run the voice control script:
-```bash
-python voice_314.py
-```
-- Speak the commands clearly into your microphone: "up", "down", "left", "right", "jump", "start".
-- Note: If you run this in the Windows Command Prompt, **do not click inside the terminal window**, as it will pause the background execution. Press ESC or ENTER if the script freezes.
+1. Check the engines you want to enable.
+2. Click **START ENGINE**.
+3. Show your hand to the camera — move your index finger past the green box to swipe.
+4. Click **STOP ENGINE** or close the window to safely terminate all processes.
 
 ## License
 

@@ -1,0 +1,23 @@
+{
+  "voice_controls": {
+    "up": "up",
+    "down": "down",
+    "left": "left",
+    "right": "right",
+    "jump": "space",
+    "start": "enter"
+  },
+  "gesture_controls": {
+    "swipe_up": "up",
+    "swipe_down": "down",
+    "swipe_left": "left",
+    "swipe_right": "right"
+  },
+  "hand_tracking": {
+    "swipe_threshold": 50,
+    "cooldown_time": 0.5,
+    "detection_confidence": 0.7,
+    "presence_confidence": 0.7,
+    "tracking_confidence": 0.6
+  }
+}
