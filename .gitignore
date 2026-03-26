@@ -16,3 +16,8 @@ ENV/
 
 # Large model files
 model/
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
