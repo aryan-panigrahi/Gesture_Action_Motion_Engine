@@ -8,6 +8,18 @@ import traceback
 from vosk import Model, KaldiRecognizer
 import threading
 
+# Avoid encoding issues on Windows terminals
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='backslashreplace')
+    except Exception:
+        pass
+if hasattr(sys.stderr, 'reconfigure'):
+    try:
+        sys.stderr.reconfigure(encoding='utf-8', errors='backslashreplace')
+    except Exception:
+        pass
+
 # --- CONFIGURATION ---
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -34,7 +46,7 @@ VALID_COMMANDS = json.dumps(valid_words)
 
 MODEL_PATH = os.path.join(PROJECT_ROOT, "model")
 if not os.path.exists(MODEL_PATH):
-    sys.exit("❌ Error: 'model' folder not found!")
+    sys.exit("[Error] 'model' folder not found!")
 
 Model.log_level = -1
 model = Model(MODEL_PATH)
@@ -43,19 +55,19 @@ q = queue.Queue()
 
 def callback(indata, frames, time, status):
     if status:
-        print(f"⚠️ Audio Status Warning: {status}", file=sys.stderr)
+        print(f"[Warning] Audio Status Warning: {status}", file=sys.stderr)
     q.put(bytes(indata))
 
 def run_voice(stop_event=None):
     if not os.path.exists(MODEL_PATH):
-        print("❌ Error: 'model' folder not found!")
+        print("[Error] 'model' folder not found!")
         return
 
-    print("\n=== 🎤 EXTERNAL MIC CONTROLLER (SMART PARTIALS) ===")
+    print("\n=== [MIC] EXTERNAL MIC CONTROLLER (SMART PARTIALS) ===")
     print("Tracking word chains to prevent double-inputs without sacrificing speed.")
     print("Say commands cleanly and distinctly.")
-    print("\n🚨 TIP: If running in Windows Command Prompt, DO NOT CLICK inside the terminal.")
-    print("Clicking text selects it and PAUSES the script. Press ESC or ENTER if it freezes! 🚨\n")
+    print("\n[TIP] If running in Windows Command Prompt, DO NOT CLICK inside the terminal.")
+    print("Clicking text selects it and PAUSES the script. Press ESC or ENTER if it freezes! [TIP]\n")
 
     # Track how many words we've successfully parsed in the current breath/utterance
     words_processed = 0 
@@ -80,7 +92,7 @@ def run_voice(stop_event=None):
                     data = q.get(timeout=1.0)
                 except queue.Empty:
                     if not stream.active:
-                        print("❌ Error: Audio stream disconnected or stopped unexpectedly!")
+                        print("[Error] Audio stream disconnected or stopped unexpectedly!")
                         break
                     continue
                 
@@ -124,7 +136,7 @@ def run_voice(stop_event=None):
                     if action:
                         if isinstance(action, str):
                             pydirectinput.press(action)
-                            print(f"⚡ ACTION: {action.upper()} (from '{current_word}')")
+                            print(f"[ACTION] {action.upper()} (from '{current_word}')")
                         
                         # Lock out any further checks for THIS specific word
                         # until a new word (separated by a space) appears
@@ -133,7 +145,7 @@ def run_voice(stop_event=None):
     except KeyboardInterrupt:
         print("\nStopped by User.")
     except Exception as e:
-        print(f"\n❌ CRITICAL CRASH: {e}")
+        print(f"\n[CRITICAL CRASH] {e}")
         traceback.print_exc()
 
 if __name__ == "__main__":
