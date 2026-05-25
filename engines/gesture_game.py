@@ -31,6 +31,7 @@ COOLDOWN_TIME        = float(ht.get("cooldown_time", 0.5))
 DETECT_CONF          = float(ht.get("detection_confidence", 0.7))
 PRESENCE_CONF        = float(ht.get("presence_confidence", 0.7))
 TRACK_CONF           = float(ht.get("tracking_confidence", 0.6))
+CAMERA_INDEX         = ht.get("camera_index", 0)
 
 INDEX_TIP = 8  # MediaPipe landmark index for index finger tip
 
@@ -59,7 +60,7 @@ def process_gestures():
     )
     landmarker = mp_vision.HandLandmarker.create_from_options(options)
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(CAMERA_INDEX)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 

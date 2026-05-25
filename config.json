@@ -1,4 +1,7 @@
 {
+  "voice_settings": {
+    "microphone_index": ""
+  },
   "voice_controls": {
     "up": "up",
     "down": "down",
@@ -14,10 +17,11 @@
     "swipe_right": "right"
   },
   "hand_tracking": {
-    "swipe_threshold": 50,
+    "swipe_threshold": 45,
     "cooldown_time": 0.5,
-    "detection_confidence": 0.7,
-    "presence_confidence": 0.7,
-    "tracking_confidence": 0.6
+    "detection_confidence": 0.5,
+    "presence_confidence": 0.5,
+    "tracking_confidence": 0.5,
+    "camera_index": 0
   }
 }

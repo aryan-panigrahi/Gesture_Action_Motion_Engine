@@ -70,7 +70,7 @@ class EngineApp:
 
         settings_win = tk.Toplevel(self.root)
         settings_win.title("Engine Settings")
-        settings_win.geometry("430x580")
+        settings_win.geometry("430x620")
         settings_win.resizable(False, False)
         settings_win.transient(self.root)
         settings_win.grab_set()
@@ -88,15 +88,24 @@ class EngineApp:
         notebook = ttk.Notebook(settings_win)
         notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # ── TAB 1: Keybinds ──────────────────────────────────────────
+        # ── TAB 1: Keybinds & Voice ──────────────────────────────────
         frame_keys = ttk.Frame(notebook)
-        notebook.add(frame_keys, text="Keybinds")
+        notebook.add(frame_keys, text="Keybinds & Voice")
+
+        ttk.Label(frame_keys, text="Voice Settings", font=("Helvetica", 10, "bold")).grid(
+            row=0, column=0, columnspan=2, pady=(10, 4))
+            
+        v_cfg = config.get("voice_settings", {})
+        mic_var = tk.StringVar(value=str(v_cfg.get("microphone_index", "")))
+        ttk.Label(frame_keys, text="Mic Index/Name:").grid(row=1, column=0, padx=10, pady=2, sticky="e")
+        mic_entry = ttk.Entry(frame_keys, textvariable=mic_var, width=15)
+        mic_entry.grid(row=1, column=1, padx=10, pady=2, sticky="w")
 
         ttk.Label(frame_keys, text="Voice Controls", font=("Helvetica", 10, "bold")).grid(
-            row=0, column=0, columnspan=2, pady=(10, 4))
+            row=2, column=0, columnspan=2, pady=(10, 4))
 
         voice_entries = {}
-        row_idx = 1
+        row_idx = 3
         for key, val in config.get("voice_controls", {}).items():
             ttk.Label(frame_keys, text=key.capitalize()).grid(row=row_idx, column=0, padx=10, pady=2, sticky="e")
             entry = ttk.Entry(frame_keys, width=15)
@@ -163,17 +172,27 @@ class EngineApp:
                   font=("Helvetica", 10, "bold")).grid(row=6, column=0, columnspan=3, pady=(2, 2), padx=10, sticky="w")
 
         add_slider(frame_ht, 7,  "Detection Confidence",
-                   "detection_confidence",  0.1, 1.0, 0.05, "{:.2f}", 0.7)
+                   "detection_confidence",  0.1, 1.0, 0.05, "{:.2f}", 0.5)
         add_slider(frame_ht, 9,  "Presence Confidence",
-                   "presence_confidence",   0.1, 1.0, 0.05, "{:.2f}", 0.7)
+                   "presence_confidence",   0.1, 1.0, 0.05, "{:.2f}", 0.5)
         add_slider(frame_ht, 11, "Tracking Confidence",
-                   "tracking_confidence",   0.1, 1.0, 0.05, "{:.2f}", 0.6)
+                   "tracking_confidence",   0.1, 1.0, 0.05, "{:.2f}", 0.5)
 
         ttk.Label(frame_ht,
                   text="Tip: Lower confidence = easier detection but more false positives.\n"
                        "Higher cooldown = fewer accidental double-swipes.",
                   foreground="gray", justify="left").grid(
             row=13, column=0, columnspan=3, padx=12, pady=(8, 0), sticky="w")
+
+        ttk.Separator(frame_ht, orient="horizontal").grid(
+            row=14, column=0, columnspan=3, sticky="ew", padx=10, pady=6)
+        ttk.Label(frame_ht, text="Input Source",
+                  font=("Helvetica", 10, "bold")).grid(row=15, column=0, columnspan=3, pady=(2, 2), padx=10, sticky="w")
+                  
+        cam_var = tk.StringVar(value=str(ht_cfg.get("camera_index", "0")))
+        ttk.Label(frame_ht, text="Camera Index or URL:").grid(row=16, column=0, padx=10, pady=2, sticky="w")
+        cam_entry = ttk.Entry(frame_ht, textvariable=cam_var, width=15)
+        cam_entry.grid(row=16, column=1, padx=10, pady=2, sticky="w")
 
         # ── TAB 3: Preview ───────────────────────────────────────────
         frame_prev = ttk.Frame(notebook)
@@ -192,6 +211,11 @@ class EngineApp:
 
         # ── Save ──────────────────────────────────────────────────────
         def save_settings():
+            v_set = {}
+            mic_val = mic_var.get().strip()
+            v_set["microphone_index"] = int(mic_val) if mic_val.isdigit() else mic_val
+            config["voice_settings"] = v_set
+
             vc = {k: ent.get() for k, ent in voice_entries.items()}
             config["voice_controls"] = vc
 
@@ -203,6 +227,10 @@ class EngineApp:
                 raw = var.get()
                 # swipe_threshold should be stored as int
                 ht_new[k] = int(round(raw)) if k == "swipe_threshold" else round(raw, 3)
+            
+            cam_val = cam_var.get()
+            ht_new["camera_index"] = int(cam_val) if cam_val.isdigit() else cam_val
+
             config["hand_tracking"] = ht_new
 
             with open(config_path, 'w') as f:

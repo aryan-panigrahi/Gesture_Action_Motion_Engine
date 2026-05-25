@@ -61,8 +61,14 @@ def run_voice(stop_event=None):
     words_processed = 0 
 
     try:
+        device_index = config.get("voice_settings", {}).get("microphone_index", "")
+        if isinstance(device_index, str) and device_index.isdigit():
+            device_index = int(device_index)
+        elif device_index == "":
+            device_index = None
+            
         with sd.RawInputStream(samplerate=16000, blocksize=BLOCK_SIZE, dtype='int16', 
-                               channels=1, callback=callback) as stream:
+                               channels=1, callback=callback, device=device_index) as stream:
             
             while True:
                 if stop_event and stop_event.is_set():

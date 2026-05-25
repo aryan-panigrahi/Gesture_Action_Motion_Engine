@@ -14,6 +14,7 @@ CONNECTIONS = [
     (0,17),(17,18),(18,19),(19,20),
     (5,9),(9,13),(13,17)
 ]
+import json
 
 def run_calibration():
     """
@@ -24,18 +25,34 @@ def run_calibration():
     print("Opening Hand Tracking Preview...")
     print("Verify that your hand landmarks are drawn correctly, then press 'q' to close.")
 
+    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
+    camera_index = 0
+    detect_conf = 0.5
+    presence_conf = 0.5
+    track_conf = 0.5
+    try:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+            ht = config.get("hand_tracking", {})
+            camera_index = ht.get("camera_index", 0)
+            detect_conf = float(ht.get("detection_confidence", 0.5))
+            presence_conf = float(ht.get("presence_confidence", 0.5))
+            track_conf = float(ht.get("tracking_confidence", 0.5))
+    except Exception:
+        pass
+
     base_options = mp_python.BaseOptions(model_asset_path=MODEL_PATH)
     options = mp_vision.HandLandmarkerOptions(
         base_options=base_options,
         num_hands=2,
-        min_hand_detection_confidence=0.7,
-        min_hand_presence_confidence=0.7,
-        min_tracking_confidence=0.6,
+        min_hand_detection_confidence=detect_conf,
+        min_hand_presence_confidence=presence_conf,
+        min_tracking_confidence=track_conf,
         running_mode=mp_vision.RunningMode.VIDEO
     )
     landmarker = mp_vision.HandLandmarker.create_from_options(options)
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(camera_index)
     frame_ts = 0
 
     while cap.isOpened():
